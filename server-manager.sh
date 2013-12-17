@@ -78,11 +78,12 @@ function getConfig
 			root /usr/share/nginx/www;\\r
 		}\\r
 		location ~ \.php$ {\\r
-		try_files \$uri =404;\\r
-		fastcgi_pass unix:/var/run/php5-fpm.sock;\\r
-								fastcgi_index index.php;\\r
-								fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\r
-								include fastcgi_params;\\r
+			fastcgi_split_path_info ^(.+\.php)(/.+)$;\\r
+			try_files \$uri =404;\\r
+			fastcgi_pass unix:/var/run/php5-fpm.sock;\\r
+			fastcgi_index index.php;\\r
+			fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\r
+			include fastcgi_params;\\r
 		}\\r
 		location ~ /\.ht {\\r
 			deny all;\\r
