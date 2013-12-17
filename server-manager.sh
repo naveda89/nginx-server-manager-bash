@@ -66,10 +66,9 @@ function getConfig
 		error_log $htdocs/$1/log/$1_errors.log;\\r
 		access_log $htdocs/$1/log/$1_access.log;\\r
 		\\r
-		index index.php index.html index.htm;\\r
-		\\r
 		location / {\\r
-			try_files \$uri \$uri/ /index.html;\\r
+			index index.php index.html index.htm;\\r
+			try_files \$uri \$uri/ /index.php?\$args;\\r
 		}\\r
 		\\r
 		error_page 404 /404.html;\\r
