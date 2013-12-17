@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-htdocs=$PWD
-nginxConfDir="/usr/local/etc/nginx/sites-enabled"
+htdocs="/var/www"
+nginxConfDir="/etc/nginx/sites-enabled"
 hostsFile="/etc/hosts"
 
 
@@ -58,17 +58,33 @@ function setChmod
 
 function getConfig
 {
-	echo -ne "server { \\r
-		listen 80; \\r
-		server_name $1.lc; \\r
-		root $htdocs/$1/www/; \\r
+	echo -ne "server {\\r
+		listen 80;\\r
+		server_name $1;\\r
 		\\r
-		error_log $htdocs/$1/log/$1_errors.log; \\r
-		access_log $htdocs/$1/log/$1_access.log; \\r
+		root $htdocs/$1/www/;\\r
+		error_log $htdocs/$1/log/$1_errors.log;\\r
+		access_log $htdocs/$1/log/$1_access.log;\\r
 		\\r
-		include common/common.conf; \\r
-		include common/php.conf; \\r
-		include common/nette.conf; \\r
+		location / {\\r
+			try_files \$uri \$uri/ /index.html;\\r
+		}\\r
+		\\r
+		error_page 404 /404.html;\\r
+		error_page 500 502 503 504 /50x.html;\\r
+		location = /50x.html {\\r
+			root /usr/share/nginx/www;\\r
+		}\\r
+		location ~ \.php$ {\\r
+		try_files \$uri =404;\\r
+		fastcgi_pass unix:/var/run/php5-fpm.sock;\\r
+								fastcgi_index index.php;\\r
+								fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\\r
+								include fastcgi_params;\\r
+		}\\r
+		location ~ /\.ht {\\r
+			deny all;\\r
+		}\\r
 	}"
 }
 
@@ -93,9 +109,13 @@ if [ $(isRunning "nginx") = "1" ]; then
 	nginx -s stop
 fi
 
-#set name of Host name
-echo -n 'Write name of host:'
-read hostName
+if [[ $1 = '-a' && $2 != '' ]]; then
+	hostName=$2
+else
+	#set name of Host name
+	echo -n 'Write name of host:'
+	read hostName
+fi
 
 if [ -z "$hostName" ]; then
 	writeMessage "Host name may not be empty!" "red"
